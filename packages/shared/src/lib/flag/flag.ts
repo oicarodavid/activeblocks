@@ -17,6 +17,7 @@ export enum ApEdition {
     COMMUNITY = 'ce',
     ENTERPRISE = 'ee',
     CLOUD = 'cloud',
+    ZENNTR = 'zenntr',
 }
 
 export enum ApFlagId {

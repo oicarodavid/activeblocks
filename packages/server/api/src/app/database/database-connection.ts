@@ -56,6 +56,22 @@ import { UserInvitationEntity } from '../user-invitations/user-invitation.entity
 import { createPGliteDataSource } from './pglite-connection'
 import { createPostgresDataSource } from './postgres-connection'
 
+import { ZenntrManagedAuthnEntity } from '../zenntr/managed-authn/managed-authn.entity'
+import { ZenntrOAuthAppEntity } from '../zenntr/oauth-apps/oauth-app.entity'
+import { ZenntrAlertEntity } from '../zenntr/alerts/alert.entity'
+import { ZenntrPlatformWebhookEntity } from '../zenntr/platform-webhooks/platform-webhook.entity'
+import { ZenntrTemplateEntity } from '../zenntr/template/template.entity'
+import { ZenntrAuditEventEntity } from '../zenntr/audit-logs/audit-event.entity'
+import { ZenntrApiKeyEntity } from '../zenntr/api-keys/api-key.entity'
+import { ZenntrCustomDomainEntity } from '../zenntr/custom-domains/custom-domain.entity'
+import { ZenntrGitRepoEntity } from '../zenntr/git-repo/git-repo.entity'
+import { ZenntrSigningKeyEntity } from '../zenntr/signing-key/signing-key.entity'
+import { ZenntrOtpEntity } from '../zenntr/otp/otp.entity'
+import { ZenntrProjectMemberEntity } from '../zenntr/project-members/project-member.entity'
+import { ZenntrProjectPlanEntity } from '../zenntr/projects/project-plan.entity'
+import { ZenntrProjectReleaseEntity } from '../zenntr/projects/project-release.entity'
+import { ZenntrPlatformAnalyticsReportEntity } from '../zenntr/analytics/platform-analytics-report.entity'
+
 const databaseType = system.get(AppSystemProp.DB_TYPE)
 
 function getEntities(): EntitySchema<unknown>[] {
@@ -111,6 +127,22 @@ function getEntities(): EntitySchema<unknown>[] {
         PlatformPlanEntity,
         EventDestinationEntity,
 
+        // Zenntr Proprietary
+        ZenntrManagedAuthnEntity,
+        ZenntrOAuthAppEntity,
+        ZenntrAlertEntity,
+        ZenntrPlatformWebhookEntity,
+        ZenntrTemplateEntity,
+        ZenntrAuditEventEntity,
+        ZenntrApiKeyEntity,
+        ZenntrCustomDomainEntity,
+        ZenntrGitRepoEntity,
+        ZenntrSigningKeyEntity,
+        ZenntrOtpEntity,
+        ZenntrProjectMemberEntity,
+        ZenntrProjectPlanEntity,
+        ZenntrProjectReleaseEntity,
+        ZenntrPlatformAnalyticsReportEntity,
     ]
 }
 

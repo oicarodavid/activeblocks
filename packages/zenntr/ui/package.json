@@ -1,0 +1,11 @@
+{
+  "name": "@zenntr/ui",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

@@ -304,8 +304,8 @@
   }
 
 :root {
-    --background: theme('colors.white');
-    --foreground: theme('colors.neutral.950');
+    --background: #FFFFFF;
+    --foreground: #121c2d;
     --popover: theme('colors.white');
   
     --secondary: theme('colors.black');
@@ -317,15 +317,15 @@
     --accent: theme('colors.neutral.50');
     --accent-foreground: theme('colors.neutral.900');
 
-    --border: theme('colors.neutral.200');
-    --input: theme('colors.neutral.200');
+    --border: #e1e3ea;
+    --input: #E5E7EB;
 
-    --ring: theme('colors.neutral.400');
+    --ring:  #146EF5;
     --radius: 0.625rem;
 
-    --primary-100: 257 75% 85%;
-    --primary: 257 74% 57%;
-    --primary-300: 257 74% 25%;
+    --primary-100: 215 100% 92%;
+    --primary: 216 92% 52%;
+    --primary-300: 215 88% 24%;
     --primary-foreground: 210 20% 98%;
 
 
@@ -376,9 +376,9 @@
   --accent: theme('colors.neutral.700');
   --accent-foreground: theme('colors.neutral.50');
 
-  --primary-100: 210 80% 40%;
-  --primary: 210 90% 50%;
-  --primary-300: 210 100% 85%;
+  --primary-100: 217 80% 40%;
+  --primary: 217 91% 60%;
+  --primary-300: 217 100% 85%;
   --primary-foreground: 210 90% 98%;
 
   --success-100: 140 60% 40%;
@@ -396,7 +396,7 @@
   --border: hsla(0, 0%, 100%, 0.1);
   --input:hsla(0, 0%, 100%, 0.1);
 
-  --ring: theme('colors.neutral.500');
+  --ring: 217 91% 60%;
   --radius: 0.625rem;
 
   --add-button-shadow: 0 0 0 6px hsl(var(--primary-100) / 0.4);
