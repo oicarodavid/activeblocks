@@ -1,6 +1,6 @@
-import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
 import { OAuthApp } from '@zenntr/shared'
+import { EntitySchema } from 'typeorm'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
 type OAuthAppSchema = OAuthApp
 

@@ -1,13 +1,14 @@
+import { apId } from '@activepieces/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
+import { system } from '../../helper/system/system'
 import { ZenntrGitRepoEntity } from './git-repo.entity'
-import { apId } from '@activepieces/shared'
 
 const repo = databaseConnection().getRepository(ZenntrGitRepoEntity)
 
 // Serviço de Integração com Git
 export const zenntrGitRepoService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de Git Repo Zenntr Inicializado')
     },
 
@@ -16,7 +17,7 @@ export const zenntrGitRepoService = {
      * @param projectId ID do projeto
      * @param config Configuração do Git
      */
-    async configure(projectId: string, config: { remoteUrl: string; branch: string; sshPrivateKey: string; slug: string }): Promise<void> {
+    async configure(projectId: string, config: { remoteUrl: string, branch: string, sshPrivateKey: string, slug: string }): Promise<void> {
         const existing = await repo.findOneBy({ projectId })
         
         if (existing) {
@@ -25,9 +26,10 @@ export const zenntrGitRepoService = {
                 branch: config.branch,
                 sshPrivateKey: config.sshPrivateKey,
                 slug: config.slug,
-                updated: new Date().toISOString()
+                updated: new Date().toISOString(),
             })
-        } else {
+        } 
+        else {
             await repo.save({
                 id: apId(),
                 created: new Date().toISOString(),
@@ -36,7 +38,7 @@ export const zenntrGitRepoService = {
                 remoteUrl: config.remoteUrl,
                 branch: config.branch,
                 sshPrivateKey: config.sshPrivateKey,
-                slug: config.slug
+                slug: config.slug,
             })
         }
     },
@@ -48,11 +50,11 @@ export const zenntrGitRepoService = {
     async sync(projectId: string): Promise<void> {
         const repoConfig = await repo.findOneBy({ projectId })
         if (!repoConfig) {
-             throw new Error('Git repository not configured for this project')
+            throw new Error('Git repository not configured for this project')
         }
         
-        console.log(`[Zenntr Git] Sincronizando projeto ${projectId} com ${repoConfig.remoteUrl}`)
+        system.globalLogger().info(`[Zenntr Git] Sincronizando projeto ${projectId} com ${repoConfig.remoteUrl}`)
         // Aqui entraria a lógica complexa de git pull/push usando biblioteca git-native ou similar
         // No contexto deste serviço, estamos lidando com a persistência da configuração.
-    }
+    },
 }

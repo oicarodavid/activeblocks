@@ -1,8 +1,8 @@
+import { ProjectReleaseType } from '@activepieces/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
-import { ProjectReleaseType } from '@activepieces/shared'
 
-export interface ZenntrProjectRelease {
+export type ZenntrProjectRelease = {
     id: string
     created: string
     updated: string

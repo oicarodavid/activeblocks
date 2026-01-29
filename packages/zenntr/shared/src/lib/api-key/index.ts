@@ -1,18 +1,15 @@
 import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
-
-export const ApiKey = Type.Object({
-    ...BaseModelSchema,
-    displayName: Type.String(),
-    platformId: Type.String(),
-    truncatedValue: Type.String(),
-    hashedValue: Type.String(),
-})
-
-export type ApiKey = Static<typeof ApiKey>
 
 export const CreateApiKeyRequest = Type.Object({
-    displayName: Type.String(),
+    name: Type.String(),
 })
 
 export type CreateApiKeyRequest = Static<typeof CreateApiKeyRequest>
+
+export type ApiKey = {
+    id: string
+    projectId: string
+    name: string
+    truncatedKey: string
+    created: string
+}

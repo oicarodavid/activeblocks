@@ -1,6 +1,6 @@
-import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
 import { Template, TemplateType } from '@zenntr/shared'
+import { EntitySchema } from 'typeorm'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
 type TemplateSchema = Template
 
@@ -20,11 +20,13 @@ export const ZenntrTemplateEntity = new EntitySchema<TemplateSchema>({
             enum: Object.values(TemplateType),
         },
         projectId: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
             nullable: true,
         },
         platformId: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
             nullable: true,
         },
         flow: {

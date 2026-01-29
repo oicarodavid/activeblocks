@@ -42,5 +42,16 @@ const enterpriseThemeChecker = async (platform: PlatformWithoutSensitiveData) =>
                 })
             }
             return defaultTheme
+        case ApEdition.ZENNTR:
+            if (platform.plan.customAppearanceEnabled) {
+                return generateTheme({
+                    websiteName: platform.name,
+                    fullLogoUrl: platform.fullLogoUrl,
+                    favIconUrl: platform.favIconUrl,
+                    logoIconUrl: platform.logoIconUrl,
+                    primaryColor: platform.primaryColor,
+                })
+            }
+            return defaultTheme
     }
 }

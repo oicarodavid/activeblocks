@@ -1,12 +1,12 @@
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrApiKey {
+export type ZenntrApiKey = {
     id: string
     created: string
     updated: string
     projectId: string
-    platformId: string
+    platformId: string | null
     displayName: string
     truncatedValue: string
     hashedValue: string
@@ -31,7 +31,6 @@ export const ZenntrApiKeyEntity = new EntitySchema<ZenntrApiKey>({
         },
         hashedValue: {
             type: String,
-            select: false, // Security: Don't select by default
         },
     },
 })

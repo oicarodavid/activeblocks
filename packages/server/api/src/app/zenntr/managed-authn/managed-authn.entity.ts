@@ -1,27 +1,28 @@
+import { ManagedAuthnConfig } from '@zenntr/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
-import { ManagedAuthnProvider } from '@zenntr/shared'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
-type ManagedAuthnProviderSchema = ManagedAuthnProvider
+export type ZenntrManagedAuthn = {
+    id: string
+    created: string
+    updated: string
+    domain: string
+    provider: string
+    config: ManagedAuthnConfig
+}
 
-export const ZenntrManagedAuthnEntity = new EntitySchema<ManagedAuthnProviderSchema>({
-    name: 'zenntr_managed_authn_provider',
+export const ZenntrManagedAuthnEntity = new EntitySchema<ZenntrManagedAuthn>({
+    name: 'zenntr_managed_authn',
     columns: {
         ...BaseColumnSchemaPart,
-        name: {
+        domain: {
             type: String,
         },
-        authUrl: {
+        provider: {
             type: String,
         },
-        tokenUrl: {
-            type: String,
-        },
-        clientId: {
-            type: String,
-        },
-        clientSecret: {
-            type: String,
+        config: {
+            type: 'jsonb',
         },
     },
 })

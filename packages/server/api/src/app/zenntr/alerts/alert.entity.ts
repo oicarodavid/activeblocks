@@ -1,10 +1,14 @@
+import { SystemAlert } from '@zenntr/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
-import { Alert, AlertSeverity } from '@zenntr/shared'
+import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-type AlertSchema = Alert
+export type ZenntrAlert = SystemAlert & {
+    created: string
+    updated: string
+    projectId: string
+}
 
-export const ZenntrAlertEntity = new EntitySchema<AlertSchema>({
+export const ZenntrAlertEntity = new EntitySchema<ZenntrAlert>({
     name: 'zenntr_alert',
     columns: {
         ...BaseColumnSchemaPart,
@@ -13,24 +17,17 @@ export const ZenntrAlertEntity = new EntitySchema<AlertSchema>({
         },
         severity: {
             type: String,
-            enum: Object.values(AlertSeverity),
         },
         message: {
-            type: String,
+            type: String, // TypeORM 'text' is default for String or specify type: 'text'
+        },
+        readAt: {
+            type: 'timestamp',
+            nullable: true,
         },
         data: {
             type: 'jsonb',
             nullable: true,
         },
-        readAt: {
-            type: 'timestamp with time zone',
-            nullable: true,
-        },
     },
-    indices: [
-        {
-            name: 'idx_zenntr_alert_project_id',
-            columns: ['projectId'],
-        },
-    ],
 })

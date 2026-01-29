@@ -1,32 +1,34 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox'
-import { zenntrPlatformService } from './platform/platform-service'
-import { zenntrAuthnService } from './authn/authn-service'
-
-import { zenntrProjectService } from './projects/project-service'
-import { zenntrBillingService } from './billing/billing-service'
-
-import { zenntrAuditLogService } from './audit-logs/audit-logs.service'
+import { zenntrAlertsService } from './alerts/alerts.service'
 import { zenntrApiKeyService } from './api-keys/api-key.service'
+import { zenntrAppCredentialService } from './app-credentials/app-credentials.service'
+import { zenntrAuditLogService } from './audit-logs/audit-logs.service'
+import { zenntrAuthnService } from './authn/authn-service'
+import { zenntrBillingService } from './billing/billing-service'
 import { zenntrCustomDomainService } from './custom-domains/custom-domain.service'
-
+import { zenntrFlagsService } from './flags/flags.service'
 import { zenntrGitRepoService } from './git-repo/git-repo.service'
-import { zenntrSigningKeyService } from './signing-key/signing-key.service'
+import { zenntrGlobalConnectionService } from './global-connections/global-connection.service'
 import { zenntrLicenseKeyService } from './license-keys/license-key.service'
 import { zenntrManagedAuthnService } from './managed-authn/managed-authn.service'
 import { zenntrOAuthAppService } from './oauth-apps/oauth-app.service'
-import { zenntrAlertsService } from './alerts/alerts.service'
-import { zenntrFlagsService } from './flags/flags.service'
+import { zenntrOtpService } from './otp/otp.service'
 import { zenntrPiecesService } from './pieces/pieces.service'
+import { zenntrPlatformService } from './platform/platform-service'
 import { zenntrPlatformWebhooksService } from './platform-webhooks/platform-webhooks.service'
+import { zenntrProjectMembersService } from './project-members/project-members.service'
+import { zenntrProjectService } from './projects/project-service'   
+import { zenntrSigningKeyService } from './signing-key/signing-key.service'
 import { zenntrTemplateService } from './template/template.service'
 
-import { zenntrOtpService } from './otp/otp.service'
+import { zenntrUserService } from './users/user.service'
 
 export const zenntrModule: FastifyPluginAsyncTypebox = async (app) => {
     app.log.info('Zenntr Module Loaded')
     await zenntrPlatformService.setup(app)
     await zenntrAuthnService.setup(app)
     await zenntrProjectService.setup(app)
+    await zenntrProjectMembersService.setup(app)
     await zenntrBillingService.setup(app)
     await zenntrAuditLogService.setup(app)
     await zenntrApiKeyService.setup(app)
@@ -42,6 +44,9 @@ export const zenntrModule: FastifyPluginAsyncTypebox = async (app) => {
     await zenntrPlatformWebhooksService.setup(app)
     await zenntrTemplateService.setup(app)
     await zenntrOtpService.setup(app)
+    await zenntrUserService.setup(app)
+    await zenntrGlobalConnectionService.setup(app)
+    await zenntrAppCredentialService.setup(app)
 }
 
 

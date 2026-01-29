@@ -2,8 +2,8 @@
   "name": "@zenntr/shared",
   "version": "0.0.1",
   "type": "commonjs",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "dependencies": {
     "@activepieces/shared": "0.0.1",
     "@sinclair/typebox": "^0.25.24"

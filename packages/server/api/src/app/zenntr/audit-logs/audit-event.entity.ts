@@ -1,41 +1,34 @@
+import { AuditEvent } from '@zenntr/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrAuditEvent {
-    id: string
+export type ZenntrAuditEvent = AuditEvent & {
     created: string
     updated: string
-    platformId: string
-    projectId: string
-    userId: string
-    event: string
-    ip: string
-    data: unknown
 }
 
 export const ZenntrAuditEventEntity = new EntitySchema<ZenntrAuditEvent>({
     name: 'zenntr_audit_event',
     columns: {
         ...BaseColumnSchemaPart,
-        platformId: {
-            ...ApIdSchema,
-        },
         projectId: {
             ...ApIdSchema,
-            nullable: true,
         },
         userId: {
             ...ApIdSchema,
         },
-        event: {
+        action: {
             type: String,
         },
-        ip: {
+        ipAddress: {
             type: String,
-            nullable: true,
         },
-        data: {
+        userAgent: {
+            type: String,
+        },
+        details: {
             type: 'jsonb',
+            nullable: true,
         },
     },
 })

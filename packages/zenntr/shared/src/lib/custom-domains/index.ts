@@ -1,17 +1,15 @@
-import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
+export enum CustomDomainStatus {
+    PENDING = 'PENDING',
+    active = 'ACTIVE',
+    FAILED = 'FAILED',
+}
 
-export const CustomDomain = Type.Object({
-    ...BaseModelSchema,
-    domain: Type.String(),
-    platformId: Type.String(),
-    status: Type.String(),
-})
-
-export type CustomDomain = Static<typeof CustomDomain>
-
-export const CreateCustomDomainRequest = Type.Object({
-    domain: Type.String(),
-})
-
-export type CreateCustomDomainRequest = Static<typeof CreateCustomDomainRequest>
+export type CustomDomain = {
+    id: string
+    domain: string
+    projectId: string
+    status: string // string or CustomDomainStatus
+    txtRecord: string
+    created: string
+    updated: string
+}

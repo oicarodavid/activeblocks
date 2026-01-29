@@ -53,24 +53,26 @@ import { TriggerSourceEntity } from '../trigger/trigger-source/trigger-source-en
 import { UserBadgeEntity } from '../user/badges/badge-entity'
 import { UserEntity } from '../user/user-entity'
 import { UserInvitationEntity } from '../user-invitations/user-invitation.entity'
-import { createPGliteDataSource } from './pglite-connection'
-import { createPostgresDataSource } from './postgres-connection'
 
-import { ZenntrManagedAuthnEntity } from '../zenntr/managed-authn/managed-authn.entity'
-import { ZenntrOAuthAppEntity } from '../zenntr/oauth-apps/oauth-app.entity'
 import { ZenntrAlertEntity } from '../zenntr/alerts/alert.entity'
-import { ZenntrPlatformWebhookEntity } from '../zenntr/platform-webhooks/platform-webhook.entity'
-import { ZenntrTemplateEntity } from '../zenntr/template/template.entity'
-import { ZenntrAuditEventEntity } from '../zenntr/audit-logs/audit-event.entity'
+import { ZenntrPlatformAnalyticsReportEntity } from '../zenntr/analytics/platform-analytics-report.entity'
 import { ZenntrApiKeyEntity } from '../zenntr/api-keys/api-key.entity'
+import { ZenntrAppCredentialEntity } from '../zenntr/app-credentials/app-credentials.entity'
+import { ZenntrAuditEventEntity } from '../zenntr/audit-logs/audit-event.entity'
 import { ZenntrCustomDomainEntity } from '../zenntr/custom-domains/custom-domain.entity'
 import { ZenntrGitRepoEntity } from '../zenntr/git-repo/git-repo.entity'
-import { ZenntrSigningKeyEntity } from '../zenntr/signing-key/signing-key.entity'
+import { ZenntrManagedAuthnEntity } from '../zenntr/managed-authn/managed-authn.entity'
+import { ZenntrOAuthAppEntity } from '../zenntr/oauth-apps/oauth-app.entity'
 import { ZenntrOtpEntity } from '../zenntr/otp/otp.entity'
+import { ZenntrPlatformWebhookEntity } from '../zenntr/platform-webhooks/platform-webhook.entity'
+import { ZenntrSigningKeyEntity } from '../zenntr/signing-key/signing-key.entity'
+import { ZenntrTemplateEntity } from '../zenntr/template/template.entity'
 import { ZenntrProjectMemberEntity } from '../zenntr/project-members/project-member.entity'
 import { ZenntrProjectPlanEntity } from '../zenntr/projects/project-plan.entity'
 import { ZenntrProjectReleaseEntity } from '../zenntr/projects/project-release.entity'
-import { ZenntrPlatformAnalyticsReportEntity } from '../zenntr/analytics/platform-analytics-report.entity'
+import { ZenntrPlatformConfigEntity } from '../zenntr/platform/platform-config.entity'
+import { createPGliteDataSource } from './pglite-connection'
+import { createPostgresDataSource } from './postgres-connection'
 
 const databaseType = system.get(AppSystemProp.DB_TYPE)
 
@@ -143,6 +145,8 @@ function getEntities(): EntitySchema<unknown>[] {
         ZenntrProjectPlanEntity,
         ZenntrProjectReleaseEntity,
         ZenntrPlatformAnalyticsReportEntity,
+        ZenntrAppCredentialEntity,
+        ZenntrPlatformConfigEntity,
     ]
 }
 

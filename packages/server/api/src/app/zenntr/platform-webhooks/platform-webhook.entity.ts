@@ -1,6 +1,6 @@
+import { PlatformWebhook } from '@zenntr/shared'
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../../database/database-common'
-import { PlatformWebhook, PlatformWebhookEvent } from '@zenntr/shared'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
 type PlatformWebhookSchema = PlatformWebhook
 
@@ -9,7 +9,8 @@ export const ZenntrPlatformWebhookEntity = new EntitySchema<PlatformWebhookSchem
     columns: {
         ...BaseColumnSchemaPart,
         platformId: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
         },
         url: {
             type: String,

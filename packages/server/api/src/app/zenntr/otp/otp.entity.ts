@@ -1,7 +1,7 @@
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrOtp {
+export type ZenntrOtp = {
     id: string
     created: string
     updated: string

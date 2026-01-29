@@ -1,14 +1,14 @@
+import { createHash, randomBytes } from 'crypto'
+import { apId } from '@activepieces/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
-import { ZenntrApiKeyEntity } from './api-key.entity'
-import { apId, ActivepiecesError, ErrorCode, ApId } from '@activepieces/shared'
-import { randomBytes, createHash } from 'crypto'
+import { ZenntrApiKey, ZenntrApiKeyEntity } from './api-key.entity'
 
 const repo = databaseConnection().getRepository(ZenntrApiKeyEntity)
 
 // Serviço de Chaves de API
 export const zenntrApiKeyService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de API Keys Zenntr Inicializado')
     },
 
@@ -22,6 +22,7 @@ export const zenntrApiKeyService = {
         const hashedValue = createHash('sha256').update(key).digest('hex')
         const truncatedValue = key.substring(0, 8) + '...'
 
+
         const savedKey = await repo.save({
             id: apId(),
             created: new Date().toISOString(),
@@ -30,7 +31,7 @@ export const zenntrApiKeyService = {
             platformId: null, // Pode ser preenchido se a chave for de nível de plataforma
             displayName,
             truncatedValue,
-            hashedValue
+            hashedValue,
         })
 
         return { id: savedKey.id, apiKey: key }
@@ -40,7 +41,8 @@ export const zenntrApiKeyService = {
      * Verifica uma chave de API.
      * @param apiKey Chave de API bruta
      */
-    async verify(apiKey: string): Promise<any | null> {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    async verify(apiKey: string): Promise<ZenntrApiKey | null> {
         const hashedValue = createHash('sha256').update(apiKey).digest('hex')
         const keyEntity = await repo.findOne({ where: { hashedValue } })
         
@@ -49,5 +51,5 @@ export const zenntrApiKeyService = {
         // Atualizar 'lastUsedAt' seria ideal aqui se o campo existisse
         
         return keyEntity
-    }
+    },
 }

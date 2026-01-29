@@ -1,5 +1,5 @@
-import { Static, Type } from '@sinclair/typebox'
 import { BaseModelSchema } from '@activepieces/shared'
+import { Static, Type } from '@sinclair/typebox'
 
 // Enumeração dos eventos que disparam webhooks da plataforma
 export enum PlatformWebhookEvent {

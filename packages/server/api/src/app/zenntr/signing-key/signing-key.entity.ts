@@ -1,7 +1,7 @@
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrSigningKey {
+export type ZenntrSigningKey = {
     id: string
     created: string
     updated: string
@@ -16,7 +16,8 @@ export const ZenntrSigningKeyEntity = new EntitySchema<ZenntrSigningKey>({
     columns: {
         ...BaseColumnSchemaPart,
         platformId: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
         },
         publicKey: {
             type: String,
@@ -25,7 +26,8 @@ export const ZenntrSigningKeyEntity = new EntitySchema<ZenntrSigningKey>({
             type: String,
         },
         generatedBy: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
             nullable: true,
         },
     },

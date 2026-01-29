@@ -1,18 +1,24 @@
 import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
 
-export const GitRepo = Type.Object({
-    ...BaseModelSchema,
-    remoteUrl: Type.String(),
-    branch: Type.String(),
-    projectId: Type.String(),
-    sshPrivateKey: Type.String(),
-})
+export const GitSyncStatus = Type.Union([
+    Type.Literal('SYNCED'),
+    Type.Literal('OUT_OF_SYNC'),
+    Type.Literal('ERROR'),
+])
 
-export type GitRepo = Static<typeof GitRepo>
+export type GitRepoConfig = {
+    id: string
+    projectId: string
+    remoteUrl: string
+    branch: string
+    sshKey: string
+    created: string
+    updated: string
+}
 
-export const GitPushRequest = Type.Object({
-    commitMessage: Type.String(),
-})
-
-export type GitPushRequest = Static<typeof GitPushRequest>
+export type GitSyncState = {
+    projectId: string
+    status: Static<typeof GitSyncStatus>
+    lastSync: string
+    commitHash?: string
+}

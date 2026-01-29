@@ -1,14 +1,14 @@
+import { randomBytes } from 'crypto'
+import { apId } from '@activepieces/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
 import { ZenntrOAuthAppEntity } from './oauth-app.entity'
-import { apId } from '@activepieces/shared'
-import { randomBytes } from 'crypto'
 
 const repo = databaseConnection().getRepository(ZenntrOAuthAppEntity)
 
 // Serviço de Aplicativos OAuth (Clientes Customizados)
 export const zenntrOAuthAppService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de OAuth Apps Zenntr Inicializado')
     },
 
@@ -16,7 +16,7 @@ export const zenntrOAuthAppService = {
      * Registra um novo aplicativo OAuth.
      * @param data Dados do aplicativo
      */
-    async registerApp(data: { name: string; redirectUris: string[] }): Promise<{ clientId: string; clientSecret: string }> {
+    async registerApp(data: { name: string, redirectUris: string[] }): Promise<{ clientId: string, clientSecret: string }> {
         const clientId = 'client_' + randomBytes(8).toString('hex')
         const clientSecret = 'secret_' + randomBytes(16).toString('hex')
         
@@ -44,5 +44,5 @@ export const zenntrOAuthAppService = {
         
         // Comparação segura de tempo constante deve ser usada aqui
         return app.clientSecret === clientSecret
-    }
+    },
 }

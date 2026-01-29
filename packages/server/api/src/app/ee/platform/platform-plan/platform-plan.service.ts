@@ -143,6 +143,7 @@ function getInitialPlanByEdition(): PlatformPlanWithOnlyLimits {
     switch (edition) {
         case ApEdition.COMMUNITY:
         case ApEdition.ENTERPRISE:
+        case ApEdition.ZENNTR:
             return OPEN_SOURCE_PLAN
         case ApEdition.CLOUD:
             return STANDARD_CLOUD_PLAN

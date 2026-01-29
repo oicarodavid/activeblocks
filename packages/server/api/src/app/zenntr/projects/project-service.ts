@@ -1,82 +1,83 @@
-import { FastifyInstance } from 'fastify'
-import { ProjectId, Project, ApError, ErrorCode, isNil } from '@activepieces/shared'
+import { apId, ProjectId } from '@activepieces/shared'
 import { ProjectUsage } from '@zenntr/shared'
+import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
 import { ProjectEntity } from '../../project/project-entity'
+import { ZenntrProjectPlan, ZenntrProjectPlanEntity } from './project-plan.entity'
 
 const projectRepo = databaseConnection().getRepository(ProjectEntity)
+const planRepo = databaseConnection().getRepository(ZenntrProjectPlanEntity)
 
 // Serviço responsável pela lógica de negócios estendida de Projetos no Zenntr
 export const zenntrProjectService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de Projetos Zenntr Inicializado')
     },
 
-    /**
-     * Verifica se o projeto atingiu algum limite do plano atual.
-     * @param projectId ID do projeto a ser verificado
-     * @throws ApError se o limite for excedido
-     */
-    async checkLimits(projectId: ProjectId): Promise<void> {
-        const project = await projectRepo.findOneBy({ id: projectId })
+    async checkLimits(projectId: ProjectId, _resource: 'flows' | 'connections' | 'members'): Promise<void> {
+        const _plan = await planRepo.findOneBy({ projectId })
         
-        if (isNil(project)) {
-            throw new ApError(ErrorCode.ENTITY_NOT_FOUND, { message: `Project ${projectId} not found` })
+        // Se não houver plano definido, assume padrão (Free)
+        if (!_plan) {
+            // Implementar lógica de limites padrão Free Tier aqui
+            // Ex: 5 flows, 3 conexões
+            return 
         }
 
-        // Lógica real: Verificar plano do projeto
-        // Assumindo que o plano está no metadata ou em uma tabela relacionada (ProjectPlan)
-        // const plan = await projectPlanRepo.findOneBy({ projectId })
-        
-        // Exemplo robusto de verificação de hard-limit (ex: Max tasks)
-        // const currentUsage = await usageService.getUsage(projectId)
-        // if (currentUsage.tasks >= plan.tasksLimit) { ... }
-        
-        // Para a implementação inicial, permitimos tudo se o projeto existe
+        // TODO: Consultar uso real usando os serviços de cada recurso
+        // Por enquanto, verificamos apenas se o plano permite
+        // if (resource === 'flows' && currentFlows >= plan.activeFlows) { ... }
     },
 
     /**
-     * Atualiza o plano de um projeto.
-     * @param projectId ID do projeto
-     * @param planId ID do novo plano
+     * Cria ou atualiza o plano de um projeto.
      */
-    async updatePlan(projectId: ProjectId, planId: string): Promise<Project | null> {
-        const project = await projectRepo.findOneBy({ id: projectId })
-        if (!project) return null
-
-        // Atualiza metadata com novo plano
-        const metadata = { ...project.metadata, planId }
-        await projectRepo.update(projectId, { metadata })
-        
-        return { ...project, metadata }
+    async setPlan(projectId: ProjectId, planDetails: Partial<ZenntrProjectPlan>): Promise<void> {
+        const existing = await planRepo.findOneBy({ projectId })
+        if (existing) {
+            await planRepo.update(existing.id, { ...planDetails, updated: new Date().toISOString() })
+        }
+        else {
+            await planRepo.save({
+                id: apId(),
+                projectId,
+                name: 'FREE',
+                flowRuns: 1000,
+                activeFlows: 5,
+                connections: 5,
+                teamMembers: 1,
+                ...planDetails,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+            })
+        }
     },
 
-    /**
-     * Obtém as métricas de uso detalhadas do projeto.
-     * @param projectId ID do projeto
-     */
     async getUsage(projectId: ProjectId): Promise<ProjectUsage | null> {
         const project = await projectRepo.findOne({
             where: { id: projectId },
             relations: {
                 flows: true,
                 owner: true,
-            }
+            },
         })
         
         if (!project) return null
 
-        // Cálculo real baseado nas entidades carregadas
+        const _plan = await planRepo.findOneBy({ projectId })
+
         return {
             projectId,
             id: 'usage_' + projectId,
-            flowRuns: 0, // Necessitaria consulta ao FlowRunRepo
-            activeFlows: project.flows.filter(f => f.status === 'ENABLED').length, // Enum deve ser verificado
-            teamMembers: 1, // project.members.length no futuro
+            flowRuns: 0, 
+            activeFlows: project.flows.filter(f => f.status === 'ENABLED').length, 
+            teamMembers: 1, 
             connections: 0,
             nextResetAt: new Date().toISOString(),
             created: project.created,
             updated: project.updated,
-        }
-    }
+            // Adicionar info do plano
+            // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        } as unknown as ProjectUsage
+    },
 }

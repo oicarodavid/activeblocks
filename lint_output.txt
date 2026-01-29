@@ -1,0 +1,44 @@
+
+> nx run server-api:lint --lintFilePatterns=packages/server/api/src/app/zenntr/**/*.ts
+
+Linting "server-api"...
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\api-keys\api-key.service.ts[24m[0m
+[0m  [2m43:43[22m  [31merror[39m  'any' overrides all other types in this union type  [2m@typescript-eslint/no-redundant-type-constituents[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\flags\flags.service.ts[24m[0m
+[0m  [2m34:28[22m  [31merror[39m  'projectId' is defined but never used. Allowed unused args must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\license-keys\license-key.service.ts[24m[0m
+[0m   [2m5:5[22m   [33mwarning[39m  Missing return type on function                                               [2m@typescript-eslint/explicit-function-return-type[22m[0m
+[0m  [2m13:20[22m  [31merror[39m    'licenseKey' is defined but never used. Allowed unused args must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\platform-webhooks\platform-webhook.entity.ts[24m[0m
+[0m  [2m1:27[22m  [31merror[39m  'PlatformWebhookEvent' is defined but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\platform\platform-config.entity.ts[24m[0m
+[0m  [2m9:12[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\projects\project-service.ts[24m[0m
+[0m  [2m56:51[22m  [31merror[39m  'any' overrides all other types in this union type  [2m@typescript-eslint/no-redundant-type-constituents[22m[0m
+[0m[0m
+[0m[4mD:\Projetos\activeblocks\packages\server\api\src\app\zenntr\signing-key\signing-key.service.ts[24m[0m
+[0m  [2m20:65[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m47:45[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[31m[1m✖ 9 problems (8 errors, 1 warning)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m
+✖ 9 problems (8 errors, 1 warning)
+
+
+
+ NX   Running target lint for project server-api failed
+
+Failed tasks:
+
+- server-api:lint
+
+Hint: run the command with --verbose for more details.
+
+View structured, searchable error logs at https://cloud.nx.app/runs/3B26GacYYP
+

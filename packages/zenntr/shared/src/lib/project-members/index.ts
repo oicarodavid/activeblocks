@@ -1,6 +1,6 @@
+import { BaseModelSchema } from '@activepieces/shared'
 import { Static, Type } from '@sinclair/typebox'
 import { ProjectRole } from '../project'
-import { BaseModelSchema } from '@activepieces/shared'
 
 export const SendInvitationRequest = Type.Object({
     email: Type.String({ format: 'email' }),

@@ -1,7 +1,7 @@
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrPlatformAnalyticsReport {
+export type ZenntrPlatformAnalyticsReport = {
     id: string
     created: string
     updated: string

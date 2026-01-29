@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify'
 
 // Serviço de Senhas de Uso Único (OTP)
 export const zenntrOtpService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de OTP Zenntr Inicializado')
     },
 
@@ -10,9 +10,9 @@ export const zenntrOtpService = {
      * Gera um novo código OTP para um usuário ou email.
      * @param email Destinatário
      */
-    async generate(email: string): Promise<string> {
+    async generate(_email: string): Promise<{ code: string, ttl: number }> {
         // TODO: Gerar código criptograficamente seguro e salvar no Redis com TTL
-        return '123456'
+        return { code: '123456', ttl: 300 }
     },
 
     /**
@@ -20,8 +20,8 @@ export const zenntrOtpService = {
      * @param email Identificador
      * @param code Código a validar
      */
-    async verify(email: string, code: string): Promise<boolean> {
+    async verify(_email: string, _code: string): Promise<{ valid: boolean, ttl: number }> {
         // TODO: Comparar com o código armazenado
-        return code === '123456'
-    }
+        return { valid: true, ttl: 0 }
+    },
 }

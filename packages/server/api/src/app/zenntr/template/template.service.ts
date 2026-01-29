@@ -1,13 +1,14 @@
+import { apId } from '@activepieces/shared'
+import { Template, TemplateType } from '@zenntr/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
 import { ZenntrTemplateEntity } from './template.entity'
-import { apId, TemplateType } from '@activepieces/shared'
 
 const repo = databaseConnection().getRepository(ZenntrTemplateEntity)
 
 // Serviço de Templates
 export const zenntrTemplateService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de Templates Zenntr Inicializado')
     },
 
@@ -16,7 +17,7 @@ export const zenntrTemplateService = {
      * @param flowId ID do fluxo base
      * @param name Nome do template
      */
-    async createFromFlow(flowId: string, name: string): Promise<any> {
+    async createFromFlow(flowId: string, name: string): Promise<Template> {
         // TODO: Ler fluxo real do FlowRepo (não injetado aqui para manter isolamento neste exato momento)
         const mockFlowData = { nodes: [], edges: [] } 
         
@@ -25,11 +26,11 @@ export const zenntrTemplateService = {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             name,
-            type: 'PROJECT' as TemplateType,
+            type: TemplateType.PROJECT,
             flow: mockFlowData,
             tags: [],
             projectId: null, // Ajustar conforme contexto
-            platformId: null
+            platformId: null,
         })
         
         return template
@@ -39,19 +40,19 @@ export const zenntrTemplateService = {
      * Lista templates disponíveis para o usuário.
      * @param projectId ID do projeto (opcional)
      */
-    async list(projectId?: string): Promise<any[]> {
+    async list(projectId?: string): Promise<Template[]> {
         const query = repo.createQueryBuilder('template')
         
         // Retorna templates de PLATAFORMA (públicos) OU do PROJETO específico
-        query.where('template.type = :platformType', { platformType: 'PLATFORM' })
+        query.where('template.type = :platformType', { platformType: TemplateType.PLATFORM })
         
         if (projectId) {
             query.orWhere('(template.type = :projectType AND template.projectId = :projectId)', { 
-                projectType: 'PROJECT', 
-                projectId 
+                projectType: TemplateType.PROJECT, 
+                projectId,
             })
         }
         
-        return await query.getMany()
-    }
+        return query.getMany()
+    },
 }

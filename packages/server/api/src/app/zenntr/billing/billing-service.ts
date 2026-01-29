@@ -1,9 +1,9 @@
-import { FastifyInstance } from 'fastify'
 import { ProjectId } from '@activepieces/shared'
+import { FastifyInstance } from 'fastify'
 
 // Serviço responsável pelo faturamento e gerenciamento de cotas do Zenntr
 export const zenntrBillingService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de Faturamento Zenntr Inicializado')
     },
 
@@ -13,7 +13,7 @@ export const zenntrBillingService = {
      * @param metric Métrica a ser incrementada (ex: 'flowRuns')
      * @param amount Quantidade a incrementar
      */
-    async trackUsage(projectId: ProjectId, metric: string, amount: number = 1): Promise<void> {
+    async trackUsage(_projectId: ProjectId, _metric: string, _amount = 1): Promise<void> {
         // TODO: Incrementar o contador no banco de dados (ex: Redis ou Postgres)
         // await usageRepo.increment({ projectId }, metric, amount)
     },
@@ -23,7 +23,7 @@ export const zenntrBillingService = {
      * @param projectId ID do projeto
      * @param metric Métrica a verificar
      */
-    async hasQuota(projectId: ProjectId, metric: string): Promise<boolean> {
+    async hasQuota(_projectId: ProjectId, _metric: string): Promise<boolean> {
         // TODO: Comparar uso atual com limites do plano
         return true
     },
@@ -33,5 +33,5 @@ export const zenntrBillingService = {
      */
     async resetQuotas(): Promise<void> {
         // TODO: Implementar cron job para resetar cotas mensais
-    }
+    },
 }

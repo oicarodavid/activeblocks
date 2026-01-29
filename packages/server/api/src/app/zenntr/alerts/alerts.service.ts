@@ -1,15 +1,15 @@
-import { FastifyInstance } from 'fastify'
-import { databaseConnection } from '../../database/database-connection'
-import { ZenntrAlertEntity } from './alert.entity'
 import { apId } from '@activepieces/shared'
 import { AlertSeverity } from '@zenntr/shared'
+import { FastifyInstance } from 'fastify'
 import { In } from 'typeorm'
+import { databaseConnection } from '../../database/database-connection'
+import { ZenntrAlertEntity } from './alert.entity'
 
 const repo = databaseConnection().getRepository(ZenntrAlertEntity)
 
 // Serviço de Alertas do Sistema
 export const zenntrAlertsService = {
-    async setup(app: FastifyInstance) {
+    async setup(app: FastifyInstance): Promise<void> {
         app.log.info('Serviço de Alertas Zenntr Inicializado')
     },
 
@@ -18,7 +18,7 @@ export const zenntrAlertsService = {
      * @param projectId ID do projeto
      * @param alert Dados do alerta (severidade, mensagem)
      */
-    async create(projectId: string, alert: { severity: string; message: string }): Promise<void> {
+    async create(projectId: string, alert: { severity: string, message: string }): Promise<void> {
         await repo.save({
             id: apId(),
             created: new Date().toISOString(),
@@ -26,8 +26,8 @@ export const zenntrAlertsService = {
             projectId,
             severity: alert.severity as AlertSeverity,
             message: alert.message,
-            readAt: null, // TypeORM might expect undefined or handle null if nullable
-            data: {} 
+            readAt: undefined, 
+            data: {},
         })
     },
 
@@ -42,8 +42,8 @@ export const zenntrAlertsService = {
             { id: In(alertIds) },
             { 
                 readAt: new Date().toISOString(),
-                updated: new Date().toISOString()
-            }
+                updated: new Date().toISOString(),
+            },
         )
-    }
+    },
 }

@@ -28,7 +28,7 @@ const getPGliteDataPath = (): string | undefined => {
 export const createPGliteDataSource = (): DataSource => {
     const edition = system.getEdition()
     const env = system.getOrThrow<ApEnvironment>(AppSystemProp.ENVIRONMENT)
-    if (edition !== ApEdition.COMMUNITY && env !== ApEnvironment.TESTING) {
+    if (edition !== ApEdition.COMMUNITY && edition !== ApEdition.ZENNTR && env !== ApEnvironment.TESTING) {
         throw new Error(`Edition ${edition} not supported in pglite mode in ${env} environment`)
     }
 

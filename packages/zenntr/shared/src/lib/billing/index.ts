@@ -1,29 +1,25 @@
 import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
 
-export enum PlanType {
-    FREE = 'FREE',
-    PRO = 'PRO',
-    ENTERPRISE = 'ENTERPRISE',
+export const PlanType = Type.Union([
+    Type.Literal('FREE'),
+    Type.Literal('PRO'),
+    Type.Literal('ENTERPRISE'),
+])
+
+export type BillingUsage = {
+    projectId: string
+    flowExecutions: number
+    connections: number
+    periodStart: string
+    periodEnd: string
 }
 
-export const ProjectUsage = Type.Object({
-    ...BaseModelSchema,
-    projectId: Type.String(),
-    flowRuns: Type.Number(),
-    activeFlows: Type.Number(),
-    teamMembers: Type.Number(),
-    connections: Type.Number(),
-    nextResetAt: Type.String(), // ISO date
-})
-
-export type ProjectUsage = Static<typeof ProjectUsage>
-
-export const ProjectPlanLimits = Type.Object({
-    flowRuns: Type.Number(),
-    activeFlows: Type.Number(),
-    teamMembers: Type.Number(),
-    tasks: Type.Number(),
-})
-
-export type ProjectPlanLimits = Static<typeof ProjectPlanLimits>
+export type BillingPlan = {
+    id: string
+    name: Static<typeof PlanType>
+    limits: {
+        tasks: number
+        users: number
+        connections: number
+    }
+}

@@ -1,7 +1,7 @@
 import { EntitySchema } from 'typeorm'
-import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
+import { BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrProjectPlan {
+export type ZenntrProjectPlan = {
     id: string
     created: string
     updated: string
@@ -18,7 +18,8 @@ export const ZenntrProjectPlanEntity = new EntitySchema<ZenntrProjectPlan>({
     columns: {
         ...BaseColumnSchemaPart,
         projectId: {
-            ...ApIdSchema,
+            type: String,
+            length: 21,
             unique: true,
         },
         name: {

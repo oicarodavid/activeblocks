@@ -1,28 +1,33 @@
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
 
-export interface ZenntrCustomDomain {
+export type ZenntrCustomDomain = {
     id: string
     created: string
     updated: string
-    platformId: string
     domain: string
-    status: 'PENDING' | 'ACTIVE' | 'FAILED'
+    projectId: string
+    status: string
+    txtRecord: string
 }
 
 export const ZenntrCustomDomainEntity = new EntitySchema<ZenntrCustomDomain>({
     name: 'zenntr_custom_domain',
     columns: {
         ...BaseColumnSchemaPart,
-        platformId: {
-            ...ApIdSchema,
-        },
         domain: {
             type: String,
             unique: true,
         },
+        projectId: {
+            ...ApIdSchema,
+        },
         status: {
             type: String,
+        },
+        txtRecord: {
+            type: String,
+            nullable: true,
         },
     },
 })

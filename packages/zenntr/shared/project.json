@@ -1,0 +1,23 @@
+{
+  "name": "zenntr-shared",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/zenntr/shared/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/zenntr/shared",
+        "main": "packages/zenntr/shared/src/index.ts",
+        "tsConfig": "packages/zenntr/shared/tsconfig.lib.json",
+        "assets": ["packages/zenntr/shared/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    }
+  },
+  "tags": []
+}

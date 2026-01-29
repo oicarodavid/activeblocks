@@ -1,6 +1,6 @@
+import { BaseModelSchema, Project, ProjectWithLimits } from '@activepieces/shared'
+
 import { Static, Type } from '@sinclair/typebox'
-import { Project, ProjectWithLimits } from '@activepieces/shared'
-import { BaseModelSchema } from '@activepieces/shared'
 
 export enum ProjectRole {
     OWNER = 'OWNER',
@@ -27,3 +27,17 @@ export const UpdateProjectRequest = Type.Object({
 })
 
 export type UpdateProjectRequest = Static<typeof UpdateProjectRequest>
+
+export const ProjectUsage = Type.Object({
+    id: Type.String(),
+    projectId: Type.String(),
+    flowRuns: Type.Number(),
+    activeFlows: Type.Number(),
+    teamMembers: Type.Number(),
+    connections: Type.Number(),
+    nextResetAt: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+})
+
+export type ProjectUsage = Static<typeof ProjectUsage>

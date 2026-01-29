@@ -1,31 +1,21 @@
 import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
 
-// Define os tipos de severidade para os alertas do sistema
 export enum AlertSeverity {
     INFO = 'INFO',
     WARNING = 'WARNING',
+    ERROR = 'ERROR',
     CRITICAL = 'CRITICAL',
 }
 
-// Define o esquema para o objeto de Alerta
-export const Alert = Type.Object({
-    ...BaseModelSchema,
+export const AlertSchema = Type.Object({
+    id: Type.String(),
     projectId: Type.String(),
     severity: Type.Enum(AlertSeverity),
     message: Type.String(),
-    data: Type.Optional(Type.Any()),
     readAt: Type.Optional(Type.String()),
+    data: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    created: Type.String(),
+    updated: Type.String(),
 })
 
-export type Alert = Static<typeof Alert>
-
-// Define a requisição para criação de um alerta (interno)
-export const CreateAlertRequest = Type.Object({
-    projectId: Type.String(),
-    severity: Type.Enum(AlertSeverity),
-    message: Type.String(),
-    data: Type.Optional(Type.Any()),
-})
-
-export type CreateAlertRequest = Static<typeof CreateAlertRequest>
+export type SystemAlert = Static<typeof AlertSchema>

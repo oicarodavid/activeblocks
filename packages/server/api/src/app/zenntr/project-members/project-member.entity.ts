@@ -1,8 +1,8 @@
+import { ProjectRole } from '@zenntr/shared'
 import { EntitySchema } from 'typeorm'
 import { ApIdSchema, BaseColumnSchemaPart } from '../../database/database-common'
-import { ProjectRole } from '@zenntr/shared'
 
-export interface ZenntrProjectMember {
+export type ZenntrProjectMember = {
     id: string
     created: string
     updated: string

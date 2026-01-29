@@ -1,14 +1,11 @@
-import { Static, Type } from '@sinclair/typebox'
-
-export enum OtpType {
-    EMAIL = 'EMAIL',
-    SMS = 'SMS',
+export type OtpState = {
+    id: string
+    userId: string
+    verified: boolean
+    expiresAt: string
 }
 
-export const VerifyOtpRequest = Type.Object({
-    email: Type.String(),
-    otp: Type.String(),
-    type: Type.Enum(OtpType),
-})
-
-export type VerifyOtpRequest = Static<typeof VerifyOtpRequest>
+export type VerifyOtpRequest = {
+    userId: string
+    code: string
+}

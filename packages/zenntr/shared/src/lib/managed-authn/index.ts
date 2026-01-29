@@ -1,23 +1,15 @@
 import { Static, Type } from '@sinclair/typebox'
-import { BaseModelSchema } from '@activepieces/shared'
 
-export const ManagedAuthnProvider = Type.Object({
-    ...BaseModelSchema,
-    name: Type.String(),
-    authUrl: Type.String(),
-    tokenUrl: Type.String(),
-    clientId: Type.String(),
-    clientSecret: Type.String(),
-})
+export const ManagedAuthnProvider = Type.Union([
+    Type.Literal('GOOGLE'),
+    Type.Literal('GITHUB'),
+    Type.Literal('SAML'),
+    Type.Literal('OIDC'),
+])
 
-export type ManagedAuthnProvider = Static<typeof ManagedAuthnProvider>
-
-export const CreateManagedAuthnProviderRequest = Type.Object({
-    name: Type.String(),
-    authUrl: Type.String(),
-    tokenUrl: Type.String(),
-    clientId: Type.String(),
-    clientSecret: Type.String(),
-})
-
-export type CreateManagedAuthnProviderRequest = Static<typeof CreateManagedAuthnProviderRequest>
+export type ManagedAuthnConfig = {
+    id: string
+    domain: string // e.g. company.com
+    provider: Static<typeof ManagedAuthnProvider>
+    config: Record<string, unknown>
+}

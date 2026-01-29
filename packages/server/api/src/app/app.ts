@@ -325,6 +325,11 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
             flagHooks.set(enterpriseFlagsHooks)
             break
         case ApEdition.ZENNTR:
+            // Base Community modules only (no EE modules due to commercial license)
+            await app.register(projectModule)
+            await app.register(communityPiecesModule)
+            await app.register(queueMetricsModule)
+            // Zenntr custom module (own implementation of enterprise features)
             await app.register(zenntrModule)
             break
         case ApEdition.COMMUNITY:
