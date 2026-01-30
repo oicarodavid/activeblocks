@@ -180,6 +180,7 @@ export const federatedAuthService = {
                 type: PrincipalType.USER,
                 projectId: project.id,
                 platformId: project.platformId,
+                tokenVersion: identity.tokenVersion,
                 zenntrRole: role, // CRITICAL: Inject zenntrRole
             },
             key: await jwtUtils.getJwtSecret(),
