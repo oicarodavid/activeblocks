@@ -40,6 +40,23 @@ export const zenntrPlatformWebhooksService = {
                 }
             }
         }
+
+
+        const systemWebhookUrl = process.env.AP_ZENNTR_WEBHOOK_URL
+        if (systemWebhookUrl) {
+            try {
+                await axios.post(systemWebhookUrl, payload, {
+                    headers: {
+                        'X-Zenntr-System-Event': 'true',
+                    },
+                    timeout: 5000,
+                })
+            }
+            catch (e) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                system.globalLogger().error(`Falha ao despachar webhook de sistema para ${systemWebhookUrl}`, e as any)
+            }
+        }
     },
 
     /**

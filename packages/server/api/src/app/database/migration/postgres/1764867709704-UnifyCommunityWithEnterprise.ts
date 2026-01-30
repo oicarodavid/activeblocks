@@ -6,7 +6,7 @@ export class UnifyCommunityWithEnterprise1764867709704 implements MigrationInter
     name = 'UnifyCommunityWithEnterprise1764867709704'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY])) {
+        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY, ApEdition.ZENNTR])) {
             return
         }
         await queryRunner.query(`

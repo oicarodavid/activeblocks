@@ -6,7 +6,7 @@ export class SetNotNullOnPlatform1709505632771 implements MigrationInterface {
     name = 'SetNotNullOnPlatform1709505632771'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY])) {
+        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY, ApEdition.ZENNTR])) {
             return
         }
         await queryRunner.query(`

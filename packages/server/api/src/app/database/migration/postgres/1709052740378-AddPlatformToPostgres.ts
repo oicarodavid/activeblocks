@@ -7,7 +7,7 @@ export class AddPlatformToPostgres1709052740378 implements MigrationInterface {
     name = 'AddPlatformToPostgres1709052740378'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY])) {
+        if (isNotOneOfTheseEditions([ApEdition.COMMUNITY, ApEdition.ZENNTR])) {
             return
         }
         await queryRunner.query(`

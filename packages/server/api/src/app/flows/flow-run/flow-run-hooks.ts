@@ -5,6 +5,7 @@ import { websocketService } from '../../core/websockets.service'
 import { alertsService } from '../../ee/alerts/alerts-service'
 import { system } from '../../helper/system/system'
 import { flowVersionService } from '../flow-version/flow-version.service'
+import { zenntrPlatformWebhooksService } from '../../zenntr/platform-webhooks/platform-webhooks.service'
 
 const paidEditions = [ApEdition.CLOUD, ApEdition.ENTERPRISE].includes(system.getEdition())
 export const flowRunHooks = (log: FastifyBaseLogger) => ({
@@ -35,6 +36,9 @@ export const flowRunHooks = (log: FastifyBaseLogger) => ({
             if (paidEditions) {
                 await alertsService(log).sendAlertOnRunFinish({ issueToAlert, flowRunId: flowRun.id })
             }
+        }
+        if (system.getEdition() === ApEdition.ZENNTR) {
+            await zenntrPlatformWebhooksService.dispatch('flow.run.finished', flowRun)
         }
         if (!paidEditions) {
             return
