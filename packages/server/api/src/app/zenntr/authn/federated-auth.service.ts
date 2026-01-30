@@ -1,8 +1,10 @@
 import {
     ActivepiecesError,
+    assertNotNullOrUndefined,
     DefaultProjectRole,
     ErrorCode,
     PlatformRole,
+    Project,
     PrincipalType,
     ProjectType,
     UserIdentityProvider,
@@ -14,7 +16,7 @@ import { projectMemberService } from '../../ee/projects/project-members/project-
 import { JwtSignAlgorithm, jwtUtils } from '../../helper/jwt-utils'
 import { system } from '../../helper/system/system'
 import { platformService } from '../../platform/platform.service'
-import { projectService } from '../../project/project-service'
+import { projectRepo, projectService } from '../../project/project-service'
 import { userService } from '../../user/user-service'
 
 type ExchangeTokenParams = {
@@ -26,6 +28,7 @@ type ExternalTokenPayload = {
     firstName?: string
     lastName?: string
     tenantId: string
+    tenantName: string
     role: string
     sub: string
     name?: string
@@ -68,7 +71,7 @@ export const federatedAuthService = {
             })
         }
 
-        const { email, tenantId, role } = payload
+        const { email, tenantId, tenantName, role } = payload
         const nameParts = (payload.name ?? payload.firstName + ' ' + payload.lastName).split(' ')
         const firstName = payload.firstName ?? nameParts[0]
         const lastName = payload.lastName ?? nameParts.slice(1).join(' ')
@@ -88,46 +91,68 @@ export const federatedAuthService = {
             })
         }
 
-        // Get or Create User
-        // We need a platform ID. For now, we try to find the oldest platform as a fallback if the user isn't associated yet.
-        // If the user already exists, we use their platformId.
-        let user = await userService.getOneByIdentityIdOnly({ identityId: identity.id })
-        
-        let platformId = user?.platformId
-
-        if (!platformId) {
-            const defaultPlatform = await platformService.getOldestPlatform()
-            if (!defaultPlatform) {
-                throw new Error('No platform found to provision user')
-            }
-            platformId = defaultPlatform.id
-        }
-
-        if (!user) {
-            user = await userService.create({
-                identityId: identity.id,
-                platformId,
-                platformRole: PlatformRole.MEMBER,
-                externalId: payload.sub, 
-                // Note: user.externalId is usually for identifying the user in an external system. 
-                // Here we might want to map it to something else if needed, but identityId is safe.
-            })
-        }
-
-        // 3. Project Provisioning (Upsert)
-        // Find project by externalId === tenantId
-        let project = await projectService.getByPlatformIdAndExternalId({
-            platformId,
+        // 2. Platform & Project Provisioning
+        // Lookup Project by External ID (Tenant ID) to find the Platform
+        let project: Project | null = await projectRepo().findOneBy({
             externalId: tenantId,
         })
 
-        if (!project) {
+        let platformId = project?.platformId
+        let user: any = null
+
+        if (platformId) {
+             // Platform exists, ensure user is part of it
+            user = await userService.getOneByIdentityAndPlatform({
+                identityId: identity.id,
+                platformId,
+            })
+        }
+        else {
+             // New Tenant -> New Platform -> New User -> New Project
+            const defaultPlatformName = tenantName || 'Default Tenant'
+            
+            // Create New Admin User (PlatformId is required, but we need User ID for Platform Owner... Cycle break: create user with null platformId first)
+             user = await userService.create({
+                identityId: identity.id,
+                platformId: null, 
+                platformRole: PlatformRole.ADMIN,
+                externalId: payload.sub,
+            })
+
+            const newPlatform = await platformService.create({
+                ownerId: user.id,
+                name: defaultPlatformName,
+            })
+            
+            platformId = newPlatform.id
+            
+            // Link User to Platform
+            await userService.update({
+                id: user.id,
+                platformId,
+                platformRole: PlatformRole.ADMIN,
+            })
+            user.platformId = platformId
+
+            // Create Default Project for this Tenant
             project = await projectService.create({
-                displayName: 'Zenntr Project', // Or derive from tenant name if available in payload
+                displayName: defaultPlatformName, 
                 ownerId: user.id,
                 platformId,
-                type: ProjectType.TEAM, // Assuming Enterprise feature implies Team/Shared project
+                type: ProjectType.TEAM,
                 externalId: tenantId,
+            })
+        }
+        
+        assertNotNullOrUndefined(project, 'project')
+
+        if (!user) {
+             // User doesn't exist in the existing platform, add them.
+            user = await userService.create({
+                identityId: identity.id,
+                platformId: platformId!,
+                platformRole: PlatformRole.MEMBER,
+                externalId: payload.sub,
             })
         }
 
