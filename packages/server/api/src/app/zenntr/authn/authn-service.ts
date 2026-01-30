@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import { RouteKind } from '@activepieces/server-shared'
 import { Type } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
 import * as jwt from 'jsonwebtoken'
@@ -13,6 +14,11 @@ export const zenntrAuthnService = {
         app.log.info('Zenntr Authentication Service Initialized')
         
         app.post('/v1/authn/federated/token', {
+            config: {
+                security: {
+                    kind: RouteKind.PUBLIC,
+                },
+            },
             schema: {
                 body: Type.Object({
                     externalToken: Type.String(),
