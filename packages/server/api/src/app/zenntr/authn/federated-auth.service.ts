@@ -4,9 +4,10 @@ import {
     DefaultProjectRole,
     ErrorCode,
     PlatformRole,
-    Project,
     PrincipalType,
+    Project,
     ProjectType,
+    User,
     UserIdentityProvider,
 } from '@activepieces/shared'
 import * as jwt from 'jsonwebtoken'
@@ -98,21 +99,21 @@ export const federatedAuthService = {
         })
 
         let platformId = project?.platformId
-        let user: any = null
+        let user: User | null = null
 
         if (platformId) {
-             // Platform exists, ensure user is part of it
+            // Platform exists, ensure user is part of it
             user = await userService.getOneByIdentityAndPlatform({
                 identityId: identity.id,
                 platformId,
             })
         }
         else {
-             // New Tenant -> New Platform -> New User -> New Project
+            // New Tenant -> New Platform -> New User -> New Project
             const defaultPlatformName = tenantName || 'Default Tenant'
             
             // Create New Admin User (PlatformId is required, but we need User ID for Platform Owner... Cycle break: create user with null platformId first)
-             user = await userService.create({
+            user = await userService.create({
                 identityId: identity.id,
                 platformId: null, 
                 platformRole: PlatformRole.ADMIN,
@@ -147,10 +148,11 @@ export const federatedAuthService = {
         assertNotNullOrUndefined(project, 'project')
 
         if (!user) {
-             // User doesn't exist in the existing platform, add them.
+            // User doesn't exist in the existing platform, add them.
+            assertNotNullOrUndefined(platformId, 'platformId')
             user = await userService.create({
                 identityId: identity.id,
-                platformId: platformId!,
+                platformId,
                 platformRole: PlatformRole.MEMBER,
                 externalId: payload.sub,
             })
@@ -179,7 +181,9 @@ export const federatedAuthService = {
                 id: user.id,
                 type: PrincipalType.USER,
                 projectId: project.id,
-                platformId: project.platformId,
+                platform: {
+                    id: project.platformId,
+                },
                 tokenVersion: identity.tokenVersion,
                 zenntrRole: role, // CRITICAL: Inject zenntrRole
             },
