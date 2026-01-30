@@ -45,11 +45,21 @@ export const federatedAuthService = {
             }, 'ZENNTR_PUBLIC_KEY is not defined')
         }
 
+        // Sanitize key: replace literal \n with actual newlines
+        let sanitizedKey = publicKey.replace(/\\n/g, '\n')
+
+        // Heuristic: If missing standard headers, wrap it (assuming raw base64 was pasted)
+        if (!sanitizedKey.includes('-----BEGIN PUBLIC KEY-----')) {
+            sanitizedKey = `-----BEGIN PUBLIC KEY-----\n${sanitizedKey.trim()}\n-----END PUBLIC KEY-----`
+        }
+
         let payload: ExternalTokenPayload
         try {
-            payload = jwt.verify(externalToken, publicKey, { algorithms: ['RS256'] }) as ExternalTokenPayload
+            payload = jwt.verify(externalToken, sanitizedKey, { algorithms: ['RS256'] }) as ExternalTokenPayload
         }
         catch (e) {
+            const errorMessage = e instanceof Error ? e.message : String(e)
+            system.globalLogger().error(e, `[FederatedAuth] Token verification failed. Error: ${errorMessage}`)
             throw new ActivepiecesError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
