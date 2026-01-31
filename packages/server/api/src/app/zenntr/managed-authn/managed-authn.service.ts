@@ -1,12 +1,14 @@
 import { ManagedAuthnConfig } from '@zenntr/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../database/database-connection'
+import { zenntrManagedAuthnController } from './managed-authn-controller'
 import { ZenntrManagedAuthn, ZenntrManagedAuthnEntity } from './managed-authn.entity'
 
 const repo = databaseConnection().getRepository(ZenntrManagedAuthnEntity)
 
 export const zenntrManagedAuthnService = {
     async setup(app: FastifyInstance): Promise<void> {
+        await app.register(zenntrManagedAuthnController, { prefix: '/v1/managed-authn' })
         app.log.info('Zenntr Managed Authn Service Initialized')
     },
 

@@ -72,6 +72,9 @@ COPY . .
 # Build both projects (already has NX_NO_CLOUD from base stage)
 RUN npx nx run-many --target=build --projects=react-ui,server-api --configuration production --parallel=2 --skip-nx-cache
 
+# Build Zenntr Embed SDK
+RUN bun build ./packages/zenntr/ui/embed-sdk/src/index.ts --outfile=./dist/packages/react-ui/assets/embed-sdk.js --target=browser
+
 # Install production dependencies only for the backend API
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     cd dist/packages/server/api && \

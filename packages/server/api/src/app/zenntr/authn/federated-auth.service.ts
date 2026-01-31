@@ -1,6 +1,7 @@
 import { SystemProp } from '@activepieces/server-shared'
 import {
     ActivepiecesError,
+    apId,
     assertNotNullOrUndefined,
     AuthenticationResponse,
     DefaultProjectRole,
@@ -184,13 +185,21 @@ export const federatedAuthService = {
             })
             
             if (!existingMember) {
-                await zenntrProjectMemberRepo().upsert({
-                    projectId: project.id,
-                    userId: user.id,
-                    role: projectRole as ZenntrProjectMember['role'],
-                    status: 'ACTIVE',
-                    updated: new Date().toISOString(),
-                }, ['projectId', 'userId'])
+                await zenntrProjectMemberRepo()
+                    .createQueryBuilder()
+                    .insert()
+                    .into(ZenntrProjectMemberEntity)
+                    .values({
+                        id: apId(),
+                        projectId: project.id,
+                        userId: user.id,
+                        role: projectRole as ZenntrProjectMember['role'],
+                        status: 'ACTIVE',
+                        created: new Date().toISOString(),
+                        updated: new Date().toISOString(),
+                    })
+                    .orUpdate(['role', 'status', 'updated'], ['projectId', 'userId'])
+                    .execute()
             }
         }
 
@@ -204,15 +213,30 @@ export const federatedAuthService = {
         }
 
         // Update Zenntr Project Plan
-        await zenntrProjectPlanRepo().upsert({
-            projectId: project.id,
-            name: project.displayName,
-            piecesFilterType: planUpdate.piecesFilterType,
-            pieces: planUpdate.pieces,
-            tasks: planUpdate.tasks,
-            aiCredits: planUpdate.aiCredits,
-            updated: new Date().toISOString(),
-        }, ['projectId'])
+        await zenntrProjectPlanRepo()
+            .createQueryBuilder()
+            .insert()
+            .into(ZenntrProjectPlanEntity)
+            .values({
+                id: apId(),
+                projectId: project.id,
+                name: project.displayName,
+                piecesFilterType: planUpdate.piecesFilterType,
+                pieces: planUpdate.pieces,
+                tasks: planUpdate.tasks,
+                aiCredits: planUpdate.aiCredits,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+                flowRuns: 0,
+                activeFlows: 0,
+                connections: 0,
+                teamMembers: 0,
+            })
+            .orUpdate(
+                ['name', 'piecesFilterType', 'pieces', 'tasks', 'aiCredits', 'updated'],
+                ['projectId'],
+            )
+            .execute()
 
         // Update Project Metadata for Frontend Consumption
         if (!project.metadata || JSON.stringify(project.metadata.zenntrPlan) !== JSON.stringify(planUpdate)) {

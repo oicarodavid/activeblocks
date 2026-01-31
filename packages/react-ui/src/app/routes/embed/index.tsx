@@ -4,55 +4,72 @@ import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useEffectOnce } from 'react-use';
 
-import { memoryRouter } from '@/app/guards';
-import { useEmbedding } from '@/components/embed-provider';
-import { useTheme } from '@/components/theme-provider';
-import { LoadingScreen } from '@/components/ui/loading-screen';
-import { useAuthorization } from '@/hooks/authorization-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
-import { managedAuthApi } from '@/lib/managed-auth-api';
+import { useEmbedding } from '../../../components/embed-provider';
+import { useTheme } from '../../../components/theme-provider';
+import { LoadingScreen } from '../../../components/ui/loading-screen';
+import { useAuthorization } from '../../../hooks/authorization-hooks';
+import { authenticationSession } from '../../../lib/authentication-session';
+import { managedAuthApi } from '../../../lib/managed-auth-api';
 import {
   combinePaths,
   determineDefaultRoute,
   parentWindow,
   routesThatRequireProjectId,
-} from '@/lib/utils';
-import {
-  ActivepiecesClientAuthenticationFailed,
-  ActivepiecesClientAuthenticationSuccess,
-  ActivepiecesClientConfigurationFinished,
-  ActivepiecesClientEventName,
-  ActivepiecesClientInit,
-  ActivepiecesVendorEventName,
-  ActivepiecesVendorInit,
-  ActivepiecesVendorRouteChanged,
-} from 'ee-embed-sdk';
+} from '../../../lib/utils';
+import { memoryRouter } from '../../guards';
+
+// --- Zenntr Protocol Definitions ---
+
+enum HostEventType {
+  INIT = 'HOST_INIT',
+  NAVIGATE = 'HOST_NAVIGATE',
+  CONFIG_UPDATE = 'HOST_CONFIG_UPDATE',
+  THEME_CHANGE = 'HOST_THEME_CHANGE',
+  LOCALE_CHANGE = 'HOST_LOCALE_CHANGE',
+}
+
+enum IframeEventType {
+  READY = 'IFRAME_READY',
+  NAVIGATION_CHANGED = 'IFRAME_NAVIGATION_CHANGED',
+  ACTION_COMPLETED = 'IFRAME_ACTION_COMPLETED',
+  ACTION_FAILED = 'IFRAME_ACTION_FAILED',
+  MODAL_CLOSED = 'IFRAME_MODAL_CLOSED',
+  ERROR = 'IFRAME_ERROR',
+  RESIZE = 'IFRAME_RESIZE',
+  SESSION_EXPIRED = 'IFRAME_SESSION_EXPIRED',
+}
+
+interface HostInitPayload {
+  token: string;
+  config: Record<string, any>;
+  initialPath?: string;
+}
+
+interface HostNavigatePayload {
+  path: string;
+}
+
+// --- Implementation ---
 
 const notifyVendorPostAuthentication = () => {
-  const authenticationSuccessEvent: ActivepiecesClientAuthenticationSuccess = {
-    type: ActivepiecesClientEventName.CLIENT_AUTHENTICATION_SUCCESS,
-    data: {},
-  };
-  parentWindow.postMessage(authenticationSuccessEvent, '*');
-  const configurationFinishedEvent: ActivepiecesClientConfigurationFinished = {
-    type: ActivepiecesClientEventName.CLIENT_CONFIGURATION_FINISHED,
-    data: {},
-  };
-  parentWindow.postMessage(configurationFinishedEvent, '*');
+  // In Zenntr protocol, we don't need explicit 'AUTH SUCCESS',
+  // but we can imply readiness or just proceed.
+  // Use generic ready signal if needed or just let navigation happen.
 };
 
 const handleVendorNavigation = ({ projectId }: { projectId: string }) => {
-  const handleVendorRouteChange = (
-    event: MessageEvent<ActivepiecesVendorRouteChanged>,
-  ) => {
+  const handleVendorRouteChange = (event: MessageEvent) => {
     if (
       event.source === parentWindow &&
-      event.data.type === ActivepiecesVendorEventName.VENDOR_ROUTE_CHANGED
+      event.data.type === HostEventType.NAVIGATE
     ) {
-      const targetRoute = event.data.data.vendorRoute;
+      const payload = event.data.payload as HostNavigatePayload;
+      const targetRoute = payload.path;
+
       const targetRouteRequiresProjectId = Object.values(
         routesThatRequireProjectId,
       ).some((route) => targetRoute.includes(route));
+
       if (!targetRouteRequiresProjectId) {
         memoryRouter.navigate(targetRoute);
       } else {
@@ -76,9 +93,10 @@ const handleClientNavigation = () => {
     );
     parentWindow.postMessage(
       {
-        type: ActivepiecesClientEventName.CLIENT_ROUTE_CHANGED,
-        data: {
-          route: pathNameWithoutProjectOrProjectId + state.location.search,
+        type: IframeEventType.NAVIGATION_CHANGED,
+        payload: {
+          path: pathNameWithoutProjectOrProjectId + state.location.search,
+          title: document.title,
         },
       },
       '*',
@@ -106,70 +124,84 @@ const EmbedPage = React.memo(() => {
   const { setTheme } = useTheme();
   const { i18n } = useTranslation();
   const { checkAccess } = useAuthorization();
-  const initState = (event: MessageEvent<ActivepiecesVendorInit>) => {
+
+  const handleInit = (event: MessageEvent) => {
     if (
       event.source === parentWindow &&
-      event.data.type === ActivepiecesVendorEventName.VENDOR_INIT
+      event.data.type === HostEventType.INIT
     ) {
-      if (event.data.data.jwtToken) {
-        if (event.data.data.mode) {
-          setTheme(event.data.data.mode);
+      const payload = event.data.payload as HostInitPayload;
+
+      if (payload.token) {
+        // Handle Theme
+        const theme = payload.config?.theme;
+        if (theme === 'dark' || theme === 'light') {
+          setTheme(theme);
         }
+
+        const locale = payload.config?.locale || 'en';
+
         mutateAsync(
           {
-            externalAccessToken: event.data.data.jwtToken,
-            locale: event.data.data.locale ?? 'en',
+            externalAccessToken: payload.token,
+            locale: locale,
           },
           {
             onSuccess: (data) => {
               authenticationSession.saveResponse(data, true);
-              const configuredRoute = event.data.data.initialRoute ?? '/';
+              const configuredRoute = payload.initialPath ?? '/';
 
               const defaultRoute = determineDefaultRoute(checkAccess);
               const initialRoute =
                 configuredRoute === '/' ? defaultRoute : configuredRoute;
-              //must use it to ensure that the correct router in RouterProvider is used before navigation
+
               flushSync(() => {
+                const config = payload.config || {};
+                const ui = config.ui || {};
+                const appearance = config.appearance || {};
+
                 setEmbedState({
-                  hideSideNav: event.data.data.hideSidebar,
                   isEmbedded: true,
-                  hideFlowNameInBuilder:
-                    event.data.data.hideFlowNameInBuilder ?? false,
-                  disableNavigationInBuilder:
-                    event.data.data.disableNavigationInBuilder !== false,
-                  hideFolders: event.data.data.hideFolders ?? false,
-                  sdkVersion: event.data.data.sdkVersion,
-                  fontUrl: event.data.data.fontUrl,
-                  fontFamily: event.data.data.fontFamily,
+                  hideSideNav: ui.hideSidebar ?? false,
+                  hideFlowsPageNavbar: ui.hideNavigation ?? false,
+                  disableNavigationInBuilder: ui.hideNavigation ?? false,
+                  hideFolders: false, // Defaulting if not in config
+                  hideFlowNameInBuilder: false,
+                  hideExportAndImportFlow: true,
+                  sdkVersion: '1.0.0',
+                  fontUrl: appearance.fontUrl,
+                  fontFamily: appearance.fontFamily,
                   useDarkBackground:
                     initialRoute.startsWith('/embed/connections'),
-                  hideExportAndImportFlow:
-                    event.data.data.hideExportAndImportFlow ?? false,
-                  hideHomeButtonInBuilder:
-                    event.data.data.disableNavigationInBuilder ===
-                    'keep_home_button_only'
-                      ? false
-                      : event.data.data.disableNavigationInBuilder,
-                  emitHomeButtonClickedEvent:
-                    event.data.data.emitHomeButtonClickedEvent ?? false,
-                  homeButtonIcon: event.data.data.homeButtonIcon ?? 'logo',
-                  hideDuplicateFlow: event.data.data.hideDuplicateFlow ?? false,
-                  hideFlowsPageNavbar:
-                    event.data.data.hideFlowsPageNavbar ?? false,
-                  hidePageHeader: event.data.data.hidePageHeader ?? false,
+                  hideHomeButtonInBuilder: false,
+                  emitHomeButtonClickedEvent: false,
+                  homeButtonIcon: 'logo',
+                  hideDuplicateFlow: false,
+                  hidePageHeader: ui.hideHeader ?? false,
                 });
               });
+
               memoryRouter.navigate(initialRoute);
               handleVendorNavigation({ projectId: data.projectId });
               handleClientNavigation();
               notifyVendorPostAuthentication();
             },
             onError: (error) => {
-              const errorEvent: ActivepiecesClientAuthenticationFailed = {
-                type: ActivepiecesClientEventName.CLIENT_AUTHENTICATION_FAILED,
-                data: error,
-              };
-              parentWindow.postMessage(errorEvent, '*');
+              parentWindow.postMessage(
+                {
+                  type: IframeEventType.ERROR,
+                  payload: {
+                    code: 'AUTH_FAILED',
+                    message:
+                      error instanceof Error ? error.message : String(error),
+                    details: {
+                      name:
+                        error instanceof Error ? error.name : 'UnknownError',
+                    },
+                  },
+                },
+                '*',
+              );
             },
           },
         );
@@ -180,16 +212,15 @@ const EmbedPage = React.memo(() => {
   };
 
   useEffectOnce(() => {
-    const event: ActivepiecesClientInit = {
-      type: ActivepiecesClientEventName.CLIENT_INIT,
-      data: {},
-    };
-    parentWindow.postMessage(event, '*');
-    window.addEventListener('message', initState);
+    // Notify host that iframe is ready to receive INIT
+    parentWindow.postMessage({ type: IframeEventType.READY, payload: {} }, '*');
+
+    window.addEventListener('message', handleInit);
     return () => {
-      window.removeEventListener('message', initState);
+      window.removeEventListener('message', handleInit);
     };
   });
+
   return <LoadingScreen brightSpinner={embedState.useDarkBackground} />;
 });
 

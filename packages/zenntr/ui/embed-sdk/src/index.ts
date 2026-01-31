@@ -324,12 +324,13 @@ export class ZenntrEmbedSDK {
         }
         break;
 
-      case IframeEventType.ERROR:
+      case IframeEventType.ERROR: {
         const error = new Error(payload?.message || 'Unknown iframe error');
         if (this.onErrorCallback) {
           this.onErrorCallback(error);
         }
         break;
+      }
 
       case IframeEventType.SESSION_EXPIRED:
         if (this.onSessionExpiredCallback) {
@@ -635,6 +636,8 @@ export function createZenntrEmbed(): ZenntrEmbedSDK {
 
 // Global export for UMD/Browser usage
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).ZenntrEmbedSDK = ZenntrEmbedSDK;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).createZenntrEmbed = createZenntrEmbed;
 }
