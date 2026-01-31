@@ -208,7 +208,7 @@ export const federatedAuthService = {
             projectId: project.id,
             name: project.displayName,
             piecesFilterType: planUpdate.piecesFilterType,
-            pieces: JSON.stringify(planUpdate.pieces),
+            pieces: planUpdate.pieces,
             tasks: planUpdate.tasks,
             aiCredits: planUpdate.aiCredits,
             updated: new Date().toISOString(),

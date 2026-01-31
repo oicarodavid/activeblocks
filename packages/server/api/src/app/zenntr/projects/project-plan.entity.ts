@@ -12,7 +12,7 @@ export type ZenntrProjectPlan = {
     connections: number
     teamMembers: number
     piecesFilterType?: string | null
-    pieces?: unknown
+    pieces?: string[] | null
     tasks?: number | null
     aiCredits?: number | null
 }
