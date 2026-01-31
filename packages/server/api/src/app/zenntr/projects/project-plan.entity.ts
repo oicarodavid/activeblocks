@@ -11,6 +11,10 @@ export type ZenntrProjectPlan = {
     activeFlows: number
     connections: number
     teamMembers: number
+    piecesFilterType?: string | null
+    pieces?: unknown
+    tasks?: number | null
+    aiCredits?: number | null
 }
 
 export const ZenntrProjectPlanEntity = new EntitySchema<ZenntrProjectPlan>({
@@ -36,6 +40,22 @@ export const ZenntrProjectPlanEntity = new EntitySchema<ZenntrProjectPlan>({
         },
         teamMembers: {
             type: Number,
+        },
+        piecesFilterType: {
+            type: String,
+            nullable: true,
+        },
+        pieces: {
+            type: 'jsonb',
+            nullable: true,
+        },
+        tasks: {
+            type: Number,
+            nullable: true,
+        },
+        aiCredits: {
+            type: Number,
+            nullable: true,
         },
     },
 })

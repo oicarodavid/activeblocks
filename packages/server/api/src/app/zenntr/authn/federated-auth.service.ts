@@ -1,6 +1,8 @@
+import { SystemProp } from '@activepieces/server-shared'
 import {
     ActivepiecesError,
     assertNotNullOrUndefined,
+    AuthenticationResponse,
     DefaultProjectRole,
     ErrorCode,
     PlatformRole,
@@ -13,12 +15,19 @@ import {
 import * as jwt from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 import { userIdentityService } from '../../authentication/user-identity/user-identity-service'
-import { projectMemberService } from '../../ee/projects/project-members/project-member.service'
-import { JwtSignAlgorithm, jwtUtils } from '../../helper/jwt-utils'
+import { repoFactory } from '../../core/db/repo-factory'
+import { jwtUtils } from '../../helper/jwt-utils'
 import { system } from '../../helper/system/system'
 import { platformService } from '../../platform/platform.service'
 import { projectRepo, projectService } from '../../project/project-service'
 import { userService } from '../../user/user-service'
+import { ZenntrProjectMember, ZenntrProjectMemberEntity } from '../project-members/project-member.entity'
+import { ZenntrProjectPlanEntity } from '../projects/project-plan.entity'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+const zenntrProjectPlanRepo = repoFactory(ZenntrProjectPlanEntity)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+const zenntrProjectMemberRepo = repoFactory(ZenntrProjectMemberEntity)
 
 type ExchangeTokenParams = {
     externalToken: string
@@ -33,13 +42,17 @@ type ExternalTokenPayload = {
     role: string
     sub: string
     name?: string
+    piecesFilterType?: string
+    piecesTags?: string
+    tasks?: string
+    aiCredits?: string
 }
 
 export const federatedAuthService = {
-    async exchangeToken({ externalToken }: ExchangeTokenParams): Promise<{ token: string }> {
+    async exchangeToken({ externalToken }: ExchangeTokenParams): Promise<AuthenticationResponse> {
         // 1. Verification
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const publicKey = system.get('ZENNTR_PUBLIC_KEY' as any)
+        const publicKey = system.get('ZENNTR_PUBLIC_KEY' as SystemProp)
         if (!publicKey) {
             throw new ActivepiecesError({
                 code: ErrorCode.SYSTEM_PROP_INVALID,
@@ -67,12 +80,12 @@ export const federatedAuthService = {
             throw new ActivepiecesError({
                 code: ErrorCode.INVALID_BEARER_TOKEN,
                 params: {
-                    message: 'Invalid external token signature',
+                    message: `Invalid external token signature: ${errorMessage}`,
                 },
             })
         }
 
-        const { email, tenantId, tenantName, role } = payload
+        const { email, tenantId, tenantName, role, piecesFilterType, piecesTags, tasks, aiCredits } = payload
         const nameParts = (payload.name ?? payload.firstName + ' ' + payload.lastName).split(' ')
         const firstName = payload.firstName ?? nameParts[0]
         const lastName = payload.lastName ?? nameParts.slice(1).join(' ')
@@ -92,7 +105,7 @@ export const federatedAuthService = {
             })
         }
 
-        // 2. Platform & Project Provisioning
+        // 3. Platform & Project Provisioning
         // Lookup Project by External ID (Tenant ID) to find the Platform
         let project: Project | null = await projectRepo().findOneBy({
             externalId: tenantId,
@@ -158,39 +171,86 @@ export const federatedAuthService = {
             })
         }
 
-        // Ensure User is Member
+        // Ensure User is Member with correct Role
+        const projectRole = role === 'ADMIN' ? 'OWNER' : (role === 'EDITOR' ? DefaultProjectRole.EDITOR : DefaultProjectRole.VIEWER) 
+        // Note: Community 'ProjectMember' usually handles roles. We map 'role' claim.
+
         if (project.ownerId !== user.id) {
-            // Check if member exists
-            const existingMember = await projectMemberService(system.globalLogger()).getRole({
-                projectId: project.id,
-                userId: user.id,
+            const existingMember = await zenntrProjectMemberRepo().findOne({
+                where: {
+                    projectId: project.id,
+                    userId: user.id,
+                },
             })
             
             if (!existingMember) {
-                await projectMemberService(system.globalLogger()).upsert({
+                await zenntrProjectMemberRepo().upsert({
                     projectId: project.id,
                     userId: user.id,
-                    projectRoleName: DefaultProjectRole.EDITOR, // Default role, specific RBAC handled by zenntrRole
-                })
+                    role: projectRole as ZenntrProjectMember['role'],
+                    status: 'ACTIVE',
+                    updated: new Date().toISOString(),
+                }, ['projectId', 'userId'])
             }
         }
 
-        // 4. Token Issuance
-        const token = await jwtUtils.sign({
+        // 4. Update Project Metadata/Plan based on Claims
+        const pieces = piecesTags ? piecesTags.split(',').map(p => p.trim()).filter(p => p.length > 0) : []
+        const planUpdate = {
+            piecesFilterType: piecesFilterType || 'NONE',
+            pieces,
+            tasks: tasks ? parseInt(tasks) : undefined,
+            aiCredits: aiCredits ? parseInt(aiCredits) : undefined,
+        }
+
+        // Update Zenntr Project Plan
+        await zenntrProjectPlanRepo().upsert({
+            projectId: project.id,
+            name: project.displayName,
+            piecesFilterType: planUpdate.piecesFilterType,
+            pieces: JSON.stringify(planUpdate.pieces),
+            tasks: planUpdate.tasks,
+            aiCredits: planUpdate.aiCredits,
+            updated: new Date().toISOString(),
+        }, ['projectId'])
+
+        // Update Project Metadata for Frontend Consumption
+        if (!project.metadata || JSON.stringify(project.metadata.zenntrPlan) !== JSON.stringify(planUpdate)) {
+            await projectService.update(project.id, {
+                type: project.type,
+                metadata: {
+                    ...project.metadata,
+                    zenntrPlan: planUpdate,
+                },
+            })
+        }
+
+        // 5. Token Issuance
+        const tokenToken = await jwtUtils.sign({
             payload: {
                 id: user.id,
                 type: PrincipalType.USER,
                 projectId: project.id,
                 platform: {
-                    id: project.platformId,
+                    id: platformId as string,
                 },
                 tokenVersion: identity.tokenVersion,
-                zenntrRole: role, // CRITICAL: Inject zenntrRole
             },
             key: await jwtUtils.getJwtSecret(),
-            algorithm: JwtSignAlgorithm.HS256,
         })
 
-        return { token }
+        return {
+            ...user,
+            token: tokenToken,
+            projectId: project.id,
+            firstName: identity.firstName,
+            lastName: identity.lastName,
+            email: identity.email,
+            trackEvents: identity.trackEvents,
+            newsLetter: identity.newsLetter,
+            verified: identity.verified,
+        }
     },
 }
+
+

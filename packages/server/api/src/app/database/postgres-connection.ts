@@ -334,6 +334,7 @@ import { RemoveUsageCountFromTemplates1768738475196 } from './migration/postgres
 import { AddTemplateIdToFlowEntity1768829135202 } from './migration/postgres/1768829135202-AddTemplateIdToFlowEntity'
 import { AddEventStreaming1769084311004 } from './migration/postgres/1769084311004-AddEventStreaming'
 import { ZenntrEntities1769654466859 } from './migration/postgres/1769654466859-ZenntrEntities'
+import { ZenntrSchemaUpdate1769823083940 } from './migration/postgres/1769823083940-ZenntrSchemaUpdate'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -685,6 +686,7 @@ export const getMigrations = (): (new () => MigrationInterface)[] => {
         AddTemplateIdToFlowEntity1768829135202,
         // Zenntr Migrations
         ZenntrEntities1769654466859,
+        ZenntrSchemaUpdate1769823083940,
     ]
     return migrations
 }
